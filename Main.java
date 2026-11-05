@@ -51,9 +51,7 @@ public class Main {
         }
     }
 
-    // ----------------------------------------------------
-    // 1. เพิ่มตึกใหม่เข้าสู่ระบบ (Polymorphism)
-    // ----------------------------------------------------
+    // 1. เพิ่มตึกใหม่เข้าสู่ระบบ
     private static void addNewBuilding() {
         System.out.println("\n--- [เพิ่มตึกใหม่] ---");
         System.out.print("ระบุรหัสตึก (เช่น SIT, LX, CB1): ");
@@ -82,9 +80,7 @@ public class Main {
         System.out.println("✅ เพิ่มตึก \"" + bName + "\" เข้าสู่ระบบเรียบร้อย!");
     }
 
-    // ----------------------------------------------------
-    // 2. เพิ่มห้องเข้าตึก (เลือก Dynamic Subclass ของ Room)
-    // ----------------------------------------------------
+    // 2. เพิ่มห้องเข้าตึก (ใช้ abstractRoom ตาม Building.java)
     private static void addRoomToBuilding() {
         System.out.println("\n--- [เพิ่มห้องพักเข้าตึก] ---");
         if (buildingMap.isEmpty()) {
@@ -125,28 +121,23 @@ public class Main {
         System.out.print("เลือกประเภท (1-2): ");
         String roomTypeChoice = scanner.nextLine().trim();
 
-        Room newRoom;
+        abstractRoom newRoom; // เปลี่ยนชนิดตัวแปรเป็น abstractRoom
 
         if (roomTypeChoice.equals("1")) {
             System.out.print("มีไวท์บอร์ดหรือไม่? (y/n): ");
             boolean hasBoard = scanner.nextLine().trim().equalsIgnoreCase("y");
-            // Instantiate StudyRoom
             newRoom = new StudyRoom(rId, floor, capacity, w, l, h, hasBoard);
         } else {
             System.out.print("ป้อนจำนวนเครื่องคอมพิวเตอร์ในห้อง: ");
             int compCount = Integer.parseInt(scanner.nextLine().trim());
-            // Instantiate LabRoom
-            newRoom = new LabRoom(rId, floor, capacity, w, l, h, compCount);
+            newRoom = new labRoom(rId, floor, capacity, w, l, h, compCount); // ใช้ labRoom (l ตัวเล็ก)
         }
 
-        // เพิ่ม Object Room (Interface) เข้าตึก
         building.addRoom(newRoom);
         System.out.println("✅ เพิ่มห้อง [" + rId + "] ประเภท " + newRoom.getRoomType() + " เข้าตึก " + building.getBuildingName() + " สำเร็จ!");
     }
 
-    // ----------------------------------------------------
-    // 3. ทดสอบเรียกใช้ Overloading Methods getEmptyRoom()
-    // ----------------------------------------------------
+    // 3. ค้นหาห้องว่าง
     private static void searchEmptyRoom() {
         System.out.println("\n--- [ค้นหาห้องว่าง] ---");
         System.out.print("ป้อนรหัสตึก: ");
@@ -168,13 +159,12 @@ public class Main {
             System.out.print("ระบุเลขชั้น: ");
             int floor = Integer.parseInt(scanner.nextLine().trim());
             
-            // Call Overloaded Method: getEmptyRoom(int)
-            List<Room> emptyRooms = building.getEmptyRoom(floor);
+            List<abstractRoom> emptyRooms = building.getEmptyRoom(floor);
             System.out.println("\n🔍 ผลการค้นหาห้องว่างบนชั้น " + floor + ":");
             if (emptyRooms.isEmpty()) {
                 System.out.println("   ไม่พบห้องว่างบนชั้นนี้");
             } else {
-                for (Room r : emptyRooms) {
+                for (abstractRoom r : emptyRooms) {
                     System.out.println("   - ห้อง " + r.getRoomID() + " [" + r.getRoomType() + "] ปริมาตร: " + r.getVolume() + " ลบ.ม.");
                 }
             }
@@ -182,8 +172,7 @@ public class Main {
             System.out.print("ระบุรหัสห้อง: ");
             String rId = scanner.nextLine().trim();
             
-            // Call Overloaded Method: getEmptyRoom(String)
-            Room r = building.getEmptyRoom(rId);
+            abstractRoom r = building.getEmptyRoom(rId);
             if (r != null) {
                 System.out.println("✅ ห้อง " + r.getRoomID() + " [" + r.getRoomType() + "] ว่างพร้อมใช้งาน!");
             } else {
@@ -192,9 +181,7 @@ public class Main {
         }
     }
 
-    // ----------------------------------------------------
     // 4. จองห้องพัก
-    // ----------------------------------------------------
     private static void bookRoom() {
         System.out.println("\n--- [จองห้องพัก] ---");
         System.out.print("ป้อนรหัสตึก: ");
@@ -208,7 +195,7 @@ public class Main {
 
         System.out.print("ป้อนรหัสห้องที่ต้องการจอง: ");
         String rId = scanner.nextLine().trim();
-        Room room = building.getRooms().get(rId);
+        abstractRoom room = building.getRooms().get(rId);
 
         if (room == null) {
             System.out.println("❌ ไม่พบห้องรหัสนี้");
@@ -234,9 +221,7 @@ public class Main {
         }
     }
 
-    // ----------------------------------------------------
     // 5. แสดงข้อมูลตึกและห้องทั้งหมด
-    // ----------------------------------------------------
     private static void displayAllBuildings() {
         System.out.println("\n===== รายงานตึกและห้องทั้งหมดในระบบ =====");
         if (buildingMap.isEmpty()) {
@@ -246,12 +231,12 @@ public class Main {
 
         for (Building b : buildingMap.values()) {
             System.out.println("\n🏢 ตึก: " + b.getBuildingName() + " (รหัส: " + b.getBuildingId() + ")");
-            Map<String, Room> rooms = b.getRooms();
+            Map<String, abstractRoom> rooms = b.getRooms();
             
             if (rooms.isEmpty()) {
                 System.out.println("   (ยังไม่มีห้องในตึกนี้)");
             } else {
-                for (Room r : rooms.values()) {
+                for (abstractRoom r : rooms.values()) {
                     System.out.printf("   [ห้อง %s] ชั้น %d | ประเภท: %-18s | ความจุ: %d คน | ปริมาตร: %.1f ลบ.ม. | สถานะ: %s\n",
                             r.getRoomID(),
                             r.getFloor(),
